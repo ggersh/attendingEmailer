@@ -3,13 +3,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 # Set up the Selenium WebDriver
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
 # Open the login page
-driver.get('https://login.qgenda.com/Account/PasswordChallenge?Email=brad.gershkowitz@gmail.com&ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dhttps%253A%252F%252Fapp.qgenda.com%26redirect_uri%3Dhttps%253A%252F%252Fapp.qgenda.com%252Foidc%252Fcallback%26response_type%3Dcode%26scope%3Dopenid%2520profile%2520email%26code_challenge%3DF63LnEvgv0CSafPYoUQuj7lm-sw_kl5tMu8Fsyc6Pa0%26code_challenge_method%3DS256%26response_mode%3Dform_post%26state%3DCfDJ8L51OZM0efJIq0_0ng4QpnXuGyq7CSbxnEb3pHubztpdFhaQZ7TB8PPLNIcwVh7Mu7LLUIVd-zu0Cni5wkqsQvkeRt9kTrlQNNN-h1XJRk38XswKuuXcgJXpUyMJ5FU892-XLoxJh26s6Z6rIGz3wF57zRvngqBUlnuvomOPlX6xh7RGRnoXqZoPxH1DZD14swsLczlsdXp4BwfS6qMhXZdnn4lY0X8wBRg4m7Anz45SkUHhXX8rw3D0PNQWeTCUcFI4Swu3bBtq2lmrzWZVXkK8gHfuzvLeSILxvNrZ4KRyFHfNwEfXdgAoB29LwV_2AIb3AFGAnx7AqR1VNEu11rqaLIsPlqzpnn5Q-PvjUy1l91wZH4ukpO9fBqT6NqyXZA%26x-client-SKU%3DID_NET8_0%26x-client-ver%3D7.1.2.0')
-
+driver.get('https://login.qgenda.com/Account/PasswordChallenge?Email=brad.gershkowitz@gmail.com')
 
 # Locate the password field and fill it
 password_field = driver.find_element(By.NAME, 'Input.Password')
@@ -18,8 +19,24 @@ password_field.send_keys('12025BdG!')
 # Submit the form
 password_field.send_keys(Keys.RETURN)
 
-# Check the result
-print("Page title after login:", driver.title)
+# Wait for the dashboard page to load
+WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'lnkScheduleTab')))
+
+# Navigate to the schedule page
+schedule_link = driver.find_element(By.ID, 'lnkScheduleTab')
+schedule_link.click()
+
+# Wait for the schedule page to load fully
+WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'content')))  # Adjust as needed
+WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'calendarContainerLeft')))  # Example of a specific element
+
+# Print the current page URL and title
+print("Current page URL:", driver.current_url)
+print("Page title:", driver.title)
+
+# Print the HTML of the page
+page_html = driver.page_source
+print("Page HTML:", page_html)
 
 # Quit the browser
 driver.quit()
