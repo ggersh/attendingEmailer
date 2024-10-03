@@ -45,7 +45,16 @@ async def run(headless=True):
             # Now navigate to the next specified URL
             await page.goto("https://www.new-innov.com/EvaluationForms/EvaluationFormsHost.aspx?Data=ILAI7Qy3xO0dH9QDopSbrxA5jlRdAqOqm13MqYV3T6m0HTzrXZKtjuZgi84gUQQEPSreplacedPSkgI2swRBdV3jc64HzYI2ye2lVBLrBbF")
 
-            # Wait for a moment to see the result on the second evaluation page
+            # Wait for the input box to be visible before filling it
+            await page.wait_for_selector("input[name='search']")  # Wait for the search input field
+
+            # Fill in the search box with "Liu"
+            await page.fill("input[name='search']", "Liu")  # Fill the input box with "Liu"
+
+            # Simulate pressing the Enter key
+            await page.keyboard.press("Enter")  # Simulate Enter key press
+
+            # Optionally wait for a moment to see the result of the Enter key press
             await page.wait_for_timeout(3000)
 
         except TimeoutError as e:
