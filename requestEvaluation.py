@@ -1,4 +1,5 @@
 import asyncio
+import time
 from playwright.async_api import async_playwright, TimeoutError
 
 async def run(headless=True):
@@ -57,18 +58,30 @@ async def run(headless=True):
             # Optionally wait for a moment to see the result of the Enter key press
             await page.wait_for_timeout(3000)
 
-            # Wait for the image element to be visible
-            await page.wait_for_selector("img.onDemandSessionRowImage", state="visible")  # Wait for the image to be visible
+            # Wait for the subject name element to be visible
+            await page.wait_for_selector("span.subjectCardName", state="visible")
 
-            # Attempt to directly invoke the modal opening function
+            # Attempt to click the associated image for Steven Liu
             await page.evaluate("""
                 () => {
-                    const img = document.querySelector('img.onDemandSessionRowImage');
-                    console.log('Image found:', img);
-                    if (img) {
-                        img.click();  // Simulate a click event to try opening the modal
+                    // Get all subject name elements
+                    const subjectNameElements = Array.from(document.querySelectorAll('span.subjectCardName'));
+
+                    // Find the one that contains "Liu, Steven"
+                    const subjectNameElement = subjectNameElements.find(el => el.textContent.includes('Liu, Steven'));
+
+                    if (subjectNameElement) {
+                        // Find the parent element and then the image associated with it
+                        const subjectCard = subjectNameElement.closest('.onDemandSubjectCard');
+                        const img = subjectCard.querySelector('img.onDemandSessionRowImage');
+                        console.log('Image found:', img);
+                        if (img) {
+                            img.click();  // Simulate a click event to try opening the modal
+                        } else {
+                            console.log('Image not found for Liu, Steven');
+                        }
                     } else {
-                        console.log('Image not found');
+                        console.log('Subject name not found');
                     }
                 }
             """)
@@ -77,17 +90,20 @@ async def run(headless=True):
             await page.wait_for_timeout(1000)
 
             # Check if modal is open by waiting for the modal selector
-            await page.wait_for_selector(".modal-class-selector", state="visible", timeout=10000)  # Replace with actual modal selector
+            modal_selector = ".modal-class-selector"  # Update this to the actual modal selector
+            try:
+                # Use a broader selector to see if the modal opens
+                await page.wait_for_selector(".modal", state="visible", timeout=15000)  # Update selector based on actual modal
+                print("Modal is visible.")
+            except TimeoutError:
+                print("Modal did not appear in time.")
 
-            # If modal is not found, try keyboard interaction
-            if not await page.is_visible(".modal-class-selector"):
-                await page.keyboard.press("Tab")  # Move focus to the image
-                await page.keyboard.press("Enter")  # Attempt to open modal via keyboard
+            # Wait for the "Send Request" button to be visible and click it
+            send_request_selector = "a.request-btn.btn.btn-primary"
+            await page.wait_for_selector(send_request_selector, state="visible", timeout=10000)  # Wait for the button to be visible
+            await page.click(send_request_selector)  # Click the button
 
-                # Wait for the modal again
-                await page.wait_for_selector(".modal-class-selector", state="visible", timeout=10000)  # Replace with actual modal selector
-
-            # Optionally wait for a moment after opening the modal
+            # Optionally wait for a moment after clicking
             await page.wait_for_timeout(3000)
 
         except TimeoutError as e:
@@ -96,6 +112,7 @@ async def run(headless=True):
             print("An error occurred:", e)
         finally:
             # Close the browser
+            time.sleep(20000)
             await browser.close()
 
 # Run the asynchronous function
