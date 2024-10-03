@@ -36,7 +36,16 @@ async def run(headless=True):
             # Wait for the page to load after login
             await page.wait_for_load_state("networkidle")  # Wait for the network to be idle
 
-            # Wait for a moment to see the result (you can adjust the time as needed)
+            # Navigate to the specified evaluation forms page
+            await page.goto("https://www.new-innov.com/EvaluationForms/EvaluationFormsHost.aspx?Control=CompleteEvals")
+
+            # Wait for a moment to see the result on the first evaluation page
+            await page.wait_for_timeout(3000)
+
+            # Now navigate to the next specified URL
+            await page.goto("https://www.new-innov.com/EvaluationForms/EvaluationFormsHost.aspx?Data=ILAI7Qy3xO0dH9QDopSbrxA5jlRdAqOqm13MqYV3T6m0HTzrXZKtjuZgi84gUQQEPSreplacedPSkgI2swRBdV3jc64HzYI2ye2lVBLrBbF")
+
+            # Wait for a moment to see the result on the second evaluation page
             await page.wait_for_timeout(3000)
 
         except TimeoutError as e:
