@@ -57,6 +57,39 @@ async def run(headless=True):
             # Optionally wait for a moment to see the result of the Enter key press
             await page.wait_for_timeout(3000)
 
+            # Wait for the image element to be visible
+            await page.wait_for_selector("img.onDemandSessionRowImage", state="visible")  # Wait for the image to be visible
+
+            # Attempt to directly invoke the modal opening function
+            await page.evaluate("""
+                () => {
+                    const img = document.querySelector('img.onDemandSessionRowImage');
+                    console.log('Image found:', img);
+                    if (img) {
+                        img.click();  // Simulate a click event to try opening the modal
+                    } else {
+                        console.log('Image not found');
+                    }
+                }
+            """)
+
+            # Wait a moment to see if the modal appears
+            await page.wait_for_timeout(1000)
+
+            # Check if modal is open by waiting for the modal selector
+            await page.wait_for_selector(".modal-class-selector", state="visible", timeout=10000)  # Replace with actual modal selector
+
+            # If modal is not found, try keyboard interaction
+            if not await page.is_visible(".modal-class-selector"):
+                await page.keyboard.press("Tab")  # Move focus to the image
+                await page.keyboard.press("Enter")  # Attempt to open modal via keyboard
+
+                # Wait for the modal again
+                await page.wait_for_selector(".modal-class-selector", state="visible", timeout=10000)  # Replace with actual modal selector
+
+            # Optionally wait for a moment after opening the modal
+            await page.wait_for_timeout(3000)
+
         except TimeoutError as e:
             print("An element took too long to appear:", e)
         except Exception as e:
